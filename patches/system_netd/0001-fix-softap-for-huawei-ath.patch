@@ -859,10 +859,10 @@ index 0000000..041f9ec
 +        len = snprintf(buf, sizeof(buf), "channel=%d\n",WIFI_DEFAULT_CHANNEL);
 +        write(fd, buf, len);
 +    }
-+        len = snprintf(buf, sizeof(buf), "driver=nl80211\n",argv[7]);
++        len = snprintf(buf, sizeof(buf), "driver=nl80211\n");
 +        write(fd, buf, len);
 +
-+        len = snprintf(buf, sizeof(buf), "hw_mode=g\n",argv[7]);
++        len = snprintf(buf, sizeof(buf), "hw_mode=g\n");
 +        write(fd, buf, len);
 +
 +    /*if (argc > 7) {
