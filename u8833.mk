@@ -27,6 +27,7 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_COPY_FILES += \
     device/huawei/u8833/configs/AudioFilter.csv:system/etc/AudioFilter.csv \
+    device/huawei/u8833/configs/init.qcom.fm.sh:system/etc/init.qcom.fm.sh \
     device/huawei/u8833/configs/thermald.conf:system/etc/thermald.conf
 
 PRODUCT_COPY_FILES += \
@@ -52,6 +53,16 @@ PRODUCT_PROPERTY_OVERRIDES += \
     rild.libpath=/system/lib/libril-qc-qmi-1.so \
     ro.telephony.ril.v3=qcomdsds,skippinpukcount,signalstrength \
     ro.telephony.ril_class=HuaweiQualcommRIL
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.fm.analogpath.supported=false \
+    ro.fm.transmitter=false \
+    ro.fm.mulinst.recording.support=false
+
+PRODUCT_PACKAGES += \
+   FM2 \
+   libqcomfm_jni \
+   qcom.fmradio
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full.mk)
 
