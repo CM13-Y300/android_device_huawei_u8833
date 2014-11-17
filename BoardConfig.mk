@@ -61,7 +61,7 @@ BOARD_CUSTOM_GRAPHICS := ../../../device/huawei/u8833/recovery/graphics.c
 TARGET_RECOVERY_FSTAB := device/huawei/u8833/rootdir/fstab.huawei
 
 # RIL
-BOARD_RIL_CLASS := ../../../device/huawei/u8833/ril/
+#BOARD_RIL_CLASS := ../../../device/huawei/u8833/ril/
 
 # Wi-Fi
 BOARD_HAS_ATH_WLAN := true
