@@ -1,4 +1,4 @@
-From a3fa2c4c70324737807b7be33327df12f6371978 Mon Sep 17 00:00:00 2001
+From d9d6633c45203268a485bb8b27fbd9ed28359b94 Mon Sep 17 00:00:00 2001
 From: Kyle Harrison <khwebmail@gmail.com>
 Date: Mon, 24 Nov 2014 15:47:03 +0000
 Subject: [PATCH] Update Huawei SoftapControllerATH for 5.0
@@ -12,7 +12,7 @@ Subject: [PATCH] Update Huawei SoftapControllerATH for 5.0
  create mode 100644 server/SoftapControllerATH.cpp
 
 diff --git a/server/Android.mk b/server/Android.mk
-index 55aa87c..8790447 100644
+index cb94bc6..f7ca9d1 100755
 --- a/server/Android.mk
 +++ b/server/Android.mk
 @@ -25,7 +25,7 @@ LOCAL_C_INCLUDES := \
@@ -24,7 +24,7 @@ index 55aa87c..8790447 100644
  LOCAL_MODULE := netd
  
  LOCAL_SHARED_LIBRARIES := \
-@@ -61,13 +61,22 @@ LOCAL_SRC_FILES := \
+@@ -61,7 +61,6 @@ LOCAL_SRC_FILES := \
          PppController.cpp \
          ResolverController.cpp \
          RouteController.cpp \
@@ -32,8 +32,9 @@ index 55aa87c..8790447 100644
          TetherController.cpp \
          UidRanges.cpp \
          VirtualNetwork.cpp \
-         main.cpp \
-         oem_iptables_hook.cpp \
+@@ -77,6 +76,16 @@ ifeq ($(BOARD_HAS_QCOM_WLAN), true)
+   LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/sdk/softap/include
+ endif
  
 +ifeq ($(BOARD_HAS_ATH_WLAN),true)
 +  LOCAL_CFLAGS += -DATH_WLAN
@@ -49,10 +50,10 @@ index 55aa87c..8790447 100644
  
  include $(CLEAR_VARS)
 diff --git a/server/CommandListener.cpp b/server/CommandListener.cpp
-index e2d2308..b56063d 100644
+index d29048d..988fc0e 100644
 --- a/server/CommandListener.cpp
 +++ b/server/CommandListener.cpp
-@@ -741,9 +741,18 @@ int CommandListener::SoftapCmd::runCommand(SocketClient *cli,
+@@ -873,9 +873,18 @@ int CommandListener::SoftapCmd::runCommand(SocketClient *cli,
                       "Missing argument in a SoftAP command", false);
          return 0;
      }
