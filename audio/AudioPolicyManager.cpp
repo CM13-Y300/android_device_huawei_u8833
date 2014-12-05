@@ -66,7 +66,7 @@ extern "C" void destroyAudioPolicyManager(AudioPolicyInterface *interface)
 
 audio_io_handle_t AudioPolicyManager::getOutput(AudioSystem::stream_type stream,
                                     uint32_t samplingRate,
-                                    uint32_t format,
+                                    audio_format_t format,
                                     uint32_t channelMask,
                                     AudioSystem::output_flags flags,
                                     const audio_offload_info_t *offloadInfo)
@@ -644,10 +644,12 @@ status_t AudioPolicyManager::setDeviceConnectionState(audio_devices_t device,
                 } else if (audio_is_bluetooth_sco_device(device)) {
                     // handle SCO device connection
                     mScoDeviceAddress = String8(device_address, MAX_DEVICE_ADDRESS_LEN);
+/*
                 } else if (mHasUsb && audio_is_usb_device(device)) {
                     // handle USB device connection
                     mUsbCardAndDevice = String8(device_address, MAX_DEVICE_ADDRESS_LEN);
                     paramStr = mUsbCardAndDevice;
+*/
                 }
                 if (!paramStr.isEmpty()) {
                     for (size_t i = 0; i < outputs.size(); i++) {
@@ -692,9 +694,11 @@ status_t AudioPolicyManager::setDeviceConnectionState(audio_devices_t device,
             } else if (audio_is_bluetooth_sco_device(device)) {
                 // handle SCO device disconnection
                 mScoDeviceAddress = "";
+/*
             } else if (mHasUsb && audio_is_usb_device(device)) {
                 // handle USB device disconnection
                 mUsbCardAndDevice = "";
+*/
             }
         } break;
 
@@ -1039,8 +1043,8 @@ void AudioPolicyManager::setForceUse(AudioSystem::force_use usage, AudioSystem::
 AudioPolicyManagerBase::IOProfile *AudioPolicyManager::getProfileForDirectOutput(
                                                                audio_devices_t device,
                                                                uint32_t samplingRate,
-                                                               uint32_t format,
-                                                               uint32_t channelMask,
+                                                               audio_format_t format,
+                                                               audio_channel_mask_t channelMask,
                                                                audio_output_flags_t flags)
 {
     if( !((flags & AUDIO_OUTPUT_FLAG_LPA)   ||
@@ -1080,8 +1084,8 @@ AudioPolicyManagerBase::IOProfile *AudioPolicyManager::getProfileForDirectOutput
 bool AudioPolicyManager::isCompatibleProfile(AudioPolicyManagerBase::IOProfile *profile,
                                              audio_devices_t device,
                                              uint32_t samplingRate,
-                                             uint32_t format,
-                                             uint32_t channelMask,
+                                             audio_format_t format,
+                                             audio_channel_mask_t channelMask,
                                             audio_output_flags_t flags)
 {
     if ((profile->mSupportedDevices & device) != device) {

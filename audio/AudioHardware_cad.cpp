@@ -314,6 +314,17 @@ status_t AudioHardware::initCheck()
     return mInit ? NO_ERROR : NO_INIT;
 }
 
+// default implementation calls its "without flags" counterpart
+AudioStreamOut* AudioHardware::openOutputStreamWithFlags(uint32_t devices,
+                                          audio_output_flags_t flags,
+                                          int *format,
+                                          uint32_t *channels,
+                                          uint32_t *sampleRate,
+                                          status_t *status)
+{
+    return openOutputStream(devices, format, channels, sampleRate, status);
+}
+
 AudioStreamOut* AudioHardware::openOutputStream(uint32_t devices, int *format, uint32_t *channels,
         uint32_t *sampleRate, status_t *status)
 {
@@ -866,8 +877,7 @@ String8 AudioHardware::getParameters(const String8& keys)
         value = String8("yes");
         param.add(key, value);
     }
-
-    key = String8(AudioParameter::keyFluenceType);
+    key = String8(AUDIO_PARAMETER_KEY_FLUENCE_TYPE);
     if (param.get(key, value) == NO_ERROR) {
        if (mDualMicEnabled) {
             value = String8("fluence");
@@ -877,7 +887,6 @@ String8 AudioHardware::getParameters(const String8& keys)
             param.add(key, value);
        }
     }
-
     ALOGV("AudioHardware::getParameters() %s", param.toString().string());
     return param.toString();
 }
