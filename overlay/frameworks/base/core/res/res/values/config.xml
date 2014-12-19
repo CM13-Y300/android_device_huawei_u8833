@@ -22,8 +22,6 @@
 <resources>
 
     <!-- Boolean indicating whether Softap requires reloading AP firmware -->
-<!--
     <bool name="config_wifiApFirmwareReload">false</bool>
--->
 
 </resources>
