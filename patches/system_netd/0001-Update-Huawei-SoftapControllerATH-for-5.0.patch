@@ -1,4 +1,4 @@
-From d9d6633c45203268a485bb8b27fbd9ed28359b94 Mon Sep 17 00:00:00 2001
+From 60084ba40b4ee07d0476dcea980ca79b3d2ffdf5 Mon Sep 17 00:00:00 2001
 From: Kyle Harrison <khwebmail@gmail.com>
 Date: Mon, 24 Nov 2014 15:47:03 +0000
 Subject: [PATCH] Update Huawei SoftapControllerATH for 5.0
@@ -7,12 +7,12 @@ Subject: [PATCH] Update Huawei SoftapControllerATH for 5.0
  server/Android.mk              |  13 +-
  server/CommandListener.cpp     |  11 +-
  server/SoftapController.h      |   8 +
- server/SoftapControllerATH.cpp | 816 +++++++++++++++++++++++++++++++++++++++++
+ server/SoftapControllerATH.cpp | 817 +++++++++++++++++++++++++++++++++++++++++
  4 files changed, 845 insertions(+), 3 deletions(-)
  create mode 100644 server/SoftapControllerATH.cpp
 
 diff --git a/server/Android.mk b/server/Android.mk
-index cb94bc6..f7ca9d1 100755
+index fc85fa4..6aff06b 100755
 --- a/server/Android.mk
 +++ b/server/Android.mk
 @@ -25,7 +25,7 @@ LOCAL_C_INCLUDES := \
@@ -32,8 +32,8 @@ index cb94bc6..f7ca9d1 100755
          TetherController.cpp \
          UidRanges.cpp \
          VirtualNetwork.cpp \
-@@ -77,6 +76,16 @@ ifeq ($(BOARD_HAS_QCOM_WLAN), true)
-   LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/sdk/softap/include
+@@ -83,6 +82,16 @@ ifdef WPA_SUPPLICANT_VERSION
+   LOCAL_C_INCLUDES += external/wpa_supplicant_8/src/common
  endif
  
 +ifeq ($(BOARD_HAS_ATH_WLAN),true)
@@ -50,7 +50,7 @@ index cb94bc6..f7ca9d1 100755
  
  include $(CLEAR_VARS)
 diff --git a/server/CommandListener.cpp b/server/CommandListener.cpp
-index d29048d..988fc0e 100644
+index d6d7ca6..b29bd7f 100644
 --- a/server/CommandListener.cpp
 +++ b/server/CommandListener.cpp
 @@ -873,9 +873,18 @@ int CommandListener::SoftapCmd::runCommand(SocketClient *cli,
@@ -74,11 +74,11 @@ index d29048d..988fc0e 100644
          rc = sSoftapCtrl->stopSoftap();
      } else if (!strcmp(argv[1], "fwreload")) {
 diff --git a/server/SoftapController.h b/server/SoftapController.h
-index 7063067..b520fca 100644
+index fd53939..a2cc137 100755
 --- a/server/SoftapController.h
 +++ b/server/SoftapController.h
-@@ -32,12 +32,20 @@ public:
-     SoftapController();
+@@ -34,6 +34,10 @@ public:
+     SoftapController(SocketListener *sl);
      virtual ~SoftapController();
  
 +#ifdef ATH_WLAN
@@ -88,22 +88,23 @@ index 7063067..b520fca 100644
      int startSoftap();
      int stopSoftap();
      bool isSoftapStarted();
-     int setSoftap(int argc, char *argv[]);
-     int fwReloadSoftap(int argc, char *argv[]);
- private:
+@@ -46,6 +50,10 @@ private:
+     int mThreadErr;
+     int mHostapdFlag;
+ #endif
 +#ifdef ATH_WLAN
 +    char mBuf[SOFTAP_MAX_BUFFER_SIZE];
 +    char mIface[IFNAMSIZ];
 +#endif
      pid_t mPid;
      void generatePsk(char *ssid, char *passphrase, char *psk);
- };
+ #ifdef LIBWPA_CLIENT_EXISTS
 diff --git a/server/SoftapControllerATH.cpp b/server/SoftapControllerATH.cpp
 new file mode 100644
 index 0000000..34fa285
 --- /dev/null
 +++ b/server/SoftapControllerATH.cpp
-@@ -0,0 +1,816 @@
+@@ -0,0 +1,817 @@
 +/*
 + * Copyright (C) 2008 The Android Open Source Project
 + *
@@ -515,8 +516,9 @@ index 0000000..34fa285
 +    return ret;
 +}
 +
-+SoftapController::SoftapController()
++SoftapController::SoftapController(SocketListener *sl)
 +    : mPid(0) {
++    mSpsl = sl;
 +    memset(mIface, 0, sizeof(mIface));
 +    mProfileValid = 0;
 +    ctrl_conn = NULL;
@@ -921,5 +923,5 @@ index 0000000..34fa285
 +    return ResponseCode::SoftapStatusResult;
 +} 
 -- 
-2.1.3
+2.2.1
 
