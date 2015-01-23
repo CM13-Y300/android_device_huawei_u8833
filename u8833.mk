@@ -54,6 +54,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.telephony.ril.v3=qcomdsds,skippinpukcount,signalstrength \
     ro.telephony.ril_class=HuaweiQualcommRIL
 
+# FM Radio
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.fm.analogpath.supported=false \
     ro.fm.transmitter=false \
@@ -64,6 +65,10 @@ PRODUCT_PACKAGES += \
    FMRecord \
    libqcomfm_jni \
    qcom.fmradio
+
+# Music
+PRODUCT_PACKAGES += \
+   Eleven
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full.mk)
 
