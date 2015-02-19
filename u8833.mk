@@ -52,7 +52,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     gsm.version.baseband=2030 \
     rild.libpath=/system/lib/libril-qc-qmi-1.so \
     ro.telephony.ril.config=qcomdsds,skippinpukcount,signalstrength \
-    ro.telephony.ril_class=HuaweiQualcommRIL
+    ro.telephony.ril_class=HuaweiRIL
 
 # FM Radio
 PRODUCT_PROPERTY_OVERRIDES += \
