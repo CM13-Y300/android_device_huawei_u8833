@@ -979,11 +979,6 @@ void AudioPolicyManager::setForceUse(AudioSystem::force_use usage, AudioSystem::
           pendingForceNone = false;
           mForceUse[usage] = config;
         }
-
-        {
-            audio_devices_t device = getDeviceForStrategy(STRATEGY_MEDIA);
-            setOutputDevice(mPrimaryOutput, device);
-        }
         break;
     case AudioSystem::FOR_RECORD:
         if (config != AudioSystem::FORCE_BT_SCO && config != AudioSystem::FORCE_WIRED_ACCESSORY &&
