@@ -492,8 +492,7 @@ AudioStreamIn* AudioHardware::openInputStream(
     } else
 #endif /*QCOM_VOIP_ENABLED*/
     {
-	
-	   if ( (mMode == AudioSystem::MODE_IN_CALL) &&
+        if ( (mMode == AudioSystem::MODE_IN_CALL) &&
             (getInputSampleRate(*sampleRate) > AUDIO_HW_IN_SAMPLERATE) &&
             (*format == AUDIO_HW_IN_FORMAT) )
         {

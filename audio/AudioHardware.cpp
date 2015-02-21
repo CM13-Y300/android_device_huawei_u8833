@@ -435,6 +435,17 @@ AudioStreamIn* AudioHardware::openInputStream(
     } else
 #endif /*QCOM_VOIP_ENABLED*/
     {
+        if ( (mMode == AudioSystem::MODE_IN_CALL) &&
+            (getInputSampleRate(*sampleRate) > AUDIO_HW_IN_SAMPLERATE) &&
+            (*format == AUDIO_HW_IN_FORMAT) )
+        {
+            ALOGE("PCM recording, in a voice call, with sample rate more than 8K not supported \
+                 re-configure with 8K and try software re-sampler ");
+            *status = UNKNOWN_ERROR ;
+            *sampleRate = AUDIO_HW_IN_SAMPLERATE;
+            mLock.unlock();
+            return 0;
+        }
         AudioStreamInMSM72xx* in = new AudioStreamInMSM72xx();
         status_t lStatus = in->set(this, devices, format, channels, sampleRate, acoustic_flags);
         if (status) {
