@@ -1453,18 +1453,17 @@ status_t AudioPolicyManager::startOutput(audio_io_handle_t output,
                 }
             }
         }
-    uint32_t NewDevice = (uint32_t)AudioPolicyManagerBase::getNewDevice(output, true);
 #ifdef QCOM_FM_ENABLED
     if((stream == AudioSystem::SYSTEM) && (FM_ANALOG == getFMMode())
-    && (NewDevice == (audio_devices_t)AudioSystem::DEVICE_OUT_FM))
+    && (newDevice == (audio_devices_t)AudioSystem::DEVICE_OUT_FM))
     {
-        NewDevice = (audio_devices_t)((uint32_t)newDevice | AudioSystem::DEVICE_OUT_WIRED_HEADSET);
+        newDevice = (audio_devices_t)((uint32_t)newDevice | AudioSystem::DEVICE_OUT_WIRED_HEADSET);
         ALOGE("Selecting AnlgFM + CODEC device %x",NewDevice);
-        muteWaitMs = setOutputDevice(output, (audio_devices_t)NewDevice, true);
+        muteWaitMs = setOutputDevice(output, (audio_devices_t)newDevice, true);
     }
     else
 #endif
-        muteWaitMs = setOutputDevice(output, (audio_devices_t)NewDevice, force);
+        muteWaitMs = setOutputDevice(output, (audio_devices_t)newDevice, force);
 
         // handle special case for sonification while in call
         if (isInCall()) {
@@ -1748,6 +1747,9 @@ status_t AudioPolicyManager::checkAndSetVolume(int stream, int index, audio_io_h
             //Double delayMs to avoid sound burst while device switch.
             mpClientInterface->setParameters(mPrimaryOutput, param.toString(), delayMs*2);
             mLastVoiceVolume = fmVolume;
+        }
+        for (size_t i = 0; i < mStreams[stream].mIndexCur.size(); i++) {
+            mStreams[stream].mIndexCur.replaceValueAt(i, index);
         }
 #endif
       }
