@@ -3661,7 +3661,7 @@ status_t AudioHardware::AudioStreamInMSM72xx::standby()
     if (!mHardware) return -1;
     // restore output routing if necessary
 #ifdef QCOM_FM_ENABLED
-    if (!mHardware->IsFmon())
+    if (!mHardware->isFMAnalog() && !mHardware->IsFmon())
 #endif
     {
         mHardware->clearCurDevice();
