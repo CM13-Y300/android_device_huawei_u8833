@@ -667,7 +667,8 @@ status_t AudioPolicyManager::setDeviceConnectionState(audio_devices_t device,
 
                 ALOGD("turning off Fm device in Mode %d",getFMMode());
                 setFmMode(FM_NONE);
-				setForceUse(AudioSystem::FOR_MEDIA, AudioSystem::FORCE_NONE);
+                if (pendingForceNone)
+                    setForceUse(AudioSystem::FOR_MEDIA, AudioSystem::FORCE_NONE);
                 newDevice = getDeviceForStrategy(STRATEGY_MEDIA, false);
                 if((newDevice & AudioSystem::DEVICE_OUT_BLUETOOTH_A2DP) ||
 				  (newDevice & AudioSystem::DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES)||
@@ -974,8 +975,18 @@ void AudioPolicyManager::setForceUse(AudioSystem::force_use usage, AudioSystem::
             ALOGW("setForceUse() invalid config %d for FOR_MEDIA", config);
             return;
         }
-        {
+        if (getFMMode() == FM_DIGITAL && config == AudioSystem::FORCE_NONE) {
+            ALOGE("donot change config as FM Mode is still digital");
+            pendingForceNone = true;
+            return;
+        } else {
+          pendingForceNone = false;
           mForceUse[usage] = config;
+        }
+
+        {
+            audio_devices_t device = getDeviceForStrategy(STRATEGY_MEDIA);
+            setOutputDevice(mPrimaryOutput, device);
         }
         break;
     case AudioSystem::FOR_RECORD:
