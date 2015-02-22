@@ -429,8 +429,10 @@ AudioStreamIn* AudioHardware::openInputStream(
         }
         mVoipInputs.add(inVoip);
         mLock.unlock();
-        if (mVoipOutActive)
+        if (mVoipOutActive) {
+            inVoip->mSetupDevice = true;
             setupDeviceforVoipCall(true);
+        }
         return inVoip;
     } else
 #endif /*QCOM_VOIP_ENABLED*/
@@ -441,7 +443,7 @@ AudioStreamIn* AudioHardware::openInputStream(
         {
             ALOGE("PCM recording, in a voice call, with sample rate more than 8K not supported \
                  re-configure with 8K and try software re-sampler ");
-            *status = UNKNOWN_ERROR ;
+            *status = -EINVAL;
             *sampleRate = AUDIO_HW_IN_SAMPLERATE;
             mLock.unlock();
             return 0;
@@ -2085,7 +2087,7 @@ status_t AudioHardware::setupDeviceforVoipCall(bool value)
     }
 
     int mode = (value ? AudioSystem::MODE_IN_COMMUNICATION : AudioSystem::MODE_NORMAL);
-    if (setMode(mode) != NO_ERROR) {
+    if (setMode(mode) == BAD_VALUE) {
         ALOGV("setMode fails");
         return UNKNOWN_ERROR;
     }
@@ -2110,7 +2112,7 @@ AudioHardware::AudioStreamInVoip::AudioStreamInVoip() :
     mHardware(0), mFd(-1), mState(AUDIO_INPUT_CLOSED), mRetryCount(0),
     mFormat(AUDIO_HW_IN_FORMAT), mChannels(AUDIO_HW_IN_CHANNELS),
     mSampleRate(AUDIO_HW_VOIP_SAMPLERATE_8K), mBufferSize(AUDIO_HW_VOIP_BUFFERSIZE_8K),
-    mAcoustics((AudioSystem::audio_in_acoustics)0), mDevices(0)
+    mAcoustics((AudioSystem::audio_in_acoustics)0), mDevices(0), mSetupDevice(false)
 {
 }
 
@@ -2280,6 +2282,10 @@ ssize_t AudioHardware::AudioStreamInVoip::read( void* buffer, ssize_t bytes)
       return 0;
     }
 
+    if (!mSetupDevice) {
+        mSetupDevice = true;
+        mHardware->setupDeviceforVoipCall(true);
+    }
     struct msm_audio_mvs_frame audio_mvs_frame;
     memset(&audio_mvs_frame, 0, sizeof(audio_mvs_frame));
     if(mFormat == AudioSystem::PCM_16_BIT) {
@@ -2331,6 +2337,7 @@ status_t AudioHardware::AudioStreamInVoip::standby()
             ALOGD("MVS stop returned %d %d %d\n", ret, __LINE__, mHardware->mVoipFd);
             ::close(mFd);
             mFd = mHardware->mVoipFd = -1;
+            mSetupDevice = false;
             mHardware->setupDeviceforVoipCall(false);
             ALOGD("MVS driver closed %d mFd %d", __LINE__, mHardware->mVoipFd);
         }
