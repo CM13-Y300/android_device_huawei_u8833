@@ -2996,11 +2996,6 @@ ssize_t AudioHardware::AudioSessionOutLPA::write(const void* buffer, size_t byte
     if (bytes < LPA_BUFFER_SIZE) {
         ALOGV("Last buffer case");
         mReachedEOS = true;
-        mLock.unlock();
-        if (fsync(afd) != 0) {
-            ALOGE("fsync failed.");
-        }
-        mLock.lock();
     }
 
     return NO_ERROR; //TODO Do wee need to send error
@@ -3299,6 +3294,11 @@ void  AudioHardware::AudioSessionOutLPA::eventThreadEntry()
                             ALOGV("Posting the EOS to the observer player %p", mObserver);
                             mEosEventReceived = true;
                             if (mObserver != NULL) {
+                                mLock.unlock();
+                                if (fsync(afd) != 0) {
+                                    ALOGE("fsync failed.");
+                                }
+                                mLock.lock();
                                 ALOGV("mObserver: posting EOS");
                                 mObserver->postEOS(0);
                             }
