@@ -152,7 +152,8 @@ AudioHardware::AudioHardware() :
     ,mFmFd(-1),FmA2dpStatus(-1)
 #endif
 #ifdef QCOM_VOIP_ENABLED
-,mVoipFd(-1), mVoipInActive(false), mVoipOutActive(false), mDirectOutput(0), mVoipBitRate(0)
+,mVoipFd(-1), mVoipInActive(false), mVoipOutActive(false), mDirectOutput(0), mVoipBitRate(0),
+mDirectOutrefCnt(0)
 #endif /*QCOM_VOIP_ENABLED*/
 {
    if (get_audpp_filter() == 0) {
@@ -301,6 +302,7 @@ AudioStreamOut* AudioHardware::openOutputStream(uint32_t devices, int *format, u
                 }
                 if (lStatus == NO_ERROR) {
                     mDirectOutput = out;
+                    mDirectOutrefCnt++;
                     mLock.unlock();
                     if (mVoipInActive)
                         setupDeviceforVoipCall(true);
@@ -312,7 +314,8 @@ AudioStreamOut* AudioHardware::openOutputStream(uint32_t devices, int *format, u
                 }
             }
             else {
-                ALOGE(" \n AudioHardware::AudioStreamOutDirect is already open");
+                mDirectOutrefCnt++;
+                ALOGE(" \n AudioHardware::AudioStreamOutDirect is already open refcnt %d",mDirectOutrefCnt);
             }
             return mDirectOutput;
         }
@@ -387,9 +390,12 @@ void AudioHardware::closeOutputStream(AudioStreamOut* out) {
     }
 #ifdef QCOM_VOIP_ENABLED
     else if (mDirectOutput == out) {
-        ALOGV(" deleting  mDirectOutput \n");
-        delete mDirectOutput;
-        mDirectOutput = 0;
+        mDirectOutrefCnt--;
+        if (mDirectOutrefCnt <= 0) {
+            ALOGV(" deleting mDirectOutput \n");
+            delete mDirectOutput;
+            mDirectOutput = 0;
+        }
     }
 #endif /*QCOM_VOIP_ENABLED*/
     else if (mOutputLPA == out) {

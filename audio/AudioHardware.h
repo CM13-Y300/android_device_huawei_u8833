@@ -615,6 +615,7 @@ private:
             bool mVoipInActive;
             bool mVoipOutActive;
             Mutex       mVoipLock;
+            int mDirectOutrefCnt;
 #endif /*QCOM_VOIP_ENABLED*/
      friend class AudioStreamInMSM72xx;
             Mutex       mLock;
