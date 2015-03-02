@@ -40,6 +40,9 @@ extern "C" {
 #endif
 //#include <media/AudioRecord.h>
 
+#ifdef WITH_QCOM_VOIP_OVER_MVS
+#include <linux/msm_audio_mvs.h>
+#endif
 
 #define COMBO_DEVICE_SUPPORTED // Headset speaker combo device not supported on this target
 #define DUALMIC_KEY "dualmic_enabled"
@@ -271,6 +274,17 @@ status_t AudioHardware::initCheck()
     return mInit ? NO_ERROR : NO_INIT;
 }
 
+// default implementation calls its "without flags" counterpart
+AudioStreamOut* AudioHardware::openOutputStreamWithFlags(uint32_t devices,
+                                          audio_output_flags_t flags,
+                                          int *format,
+                                          uint32_t *channels,
+                                          uint32_t *sampleRate,
+                                          status_t *status)
+{
+    return openOutputStream(devices, format, channels, sampleRate, status);
+}
+
 AudioStreamOut* AudioHardware::openOutputStream(uint32_t devices, int *format, uint32_t *channels, uint32_t *sampleRate, status_t *status)
 {
     audio_output_flags_t flags = static_cast<audio_output_flags_t> (*status);
@@ -314,9 +328,9 @@ AudioStreamOut* AudioHardware::openOutputStream(uint32_t devices, int *format, u
                 }
             }
             else {
-                mDirectOutrefCnt++;
-                ALOGE(" \n AudioHardware::AudioStreamOutDirect is already open refcnt %d",mDirectOutrefCnt);
-            }
+               mDirectOutrefCnt++;
+                ALOGE(" \n AudioHardware::AudioStreamOutDirect is already open refCnt %d", mDirectOutrefCnt);
+             }
             return mDirectOutput;
         }
         else
@@ -419,7 +433,7 @@ AudioStreamIn* AudioHardware::openInputStream(
 
     mLock.lock();
 #ifdef QCOM_VOIP_ENABLED
-    if(devices == AudioSystem::DEVICE_IN_COMMUNICATION && (*sampleRate == 8000)) {
+    if ((devices == AudioSystem::DEVICE_IN_COMMUNICATION) && (*sampleRate == 8000)) {
         ALOGV("Create Audio stream Voip \n");
         AudioStreamInVoip* inVoip = new AudioStreamInVoip();
         status_t lStatus = NO_ERROR;
@@ -834,14 +848,6 @@ String8 AudioHardware::getParameters(const String8& keys)
             param.addInt(String8("EVRC"), true );
         }
     }
-#ifdef QCOM_FM_ENABLED
-    key = String8("Fm-radio");
-    if ( param.get(key,value) == NO_ERROR ) {
-        if (IsFmon()||(mCurSndDevice == SND_DEVICE_FM_ANALOG_STEREO_HEADSET)){
-            param.addInt(String8("isFMON"), true );
-        }
-    }
-#endif
     key = String8(ECHO_SUPRESSION);
     if (param.get(key, value) == NO_ERROR) {
         value = String8("yes");
@@ -1807,7 +1813,7 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input, int outputDevice)
                 ALOGI("Routing audio to Bluetooth PCM\n");
                 new_snd_device = SND_DEVICE_BT;
             } else if (inputDevice & AudioSystem::DEVICE_IN_WIRED_HEADSET) {
-                    ALOGI("Routing audio to Wired Headset\n");
+                    ALOGI("Routing audio in to Wired Headset\n");
                     new_snd_device = SND_DEVICE_HEADSET;
 #ifdef QCOM_FM_ENABLED
             } else if (inputDevice & AudioSystem::DEVICE_IN_FM_RX_A2DP) {
@@ -1815,9 +1821,12 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input, int outputDevice)
                     new_snd_device = SND_DEVICE_FM_DIGITAL_BT_A2DP_HEADSET;
                     FmA2dpStatus=true;
             } else if (inputDevice & AudioSystem::DEVICE_IN_FM_RX) {
-                    ALOGI("Routing audio to FM\n");
+                    ALOGI("Routing audio-in to FM-RX\n");
                     enableDgtlFmDriver = true;
 #endif
+            } else if (outputDevices & AudioSystem::DEVICE_OUT_WIRED_HEADPHONE) {
+                    ALOGI("Routing audio to Wired Headphone\n");
+                    new_snd_device = SND_DEVICE_HEADSET;
             } else {
                 if (outputDevices & AudioSystem::DEVICE_OUT_SPEAKER) {
                     ALOGI("Routing audio to Speakerphone\n");
@@ -1924,12 +1933,6 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input, int outputDevice)
         }
     }
 #ifdef QCOM_FM_ENABLED
-    if ((mFmFd == -1) && enableDgtlFmDriver ) {
-        enableFM();
-    } else if ((mFmFd != -1) && !enableDgtlFmDriver ) {
-        disableFM();
-    }
-
     if((outputDevices  == 0) && (FmA2dpStatus == true))
        new_snd_device = SND_DEVICE_FM_DIGITAL_BT_A2DP_HEADSET;
 #endif
@@ -2634,11 +2637,30 @@ bool AudioHardware::AudioStreamOutMSM72xx::checkStandby()
 status_t AudioHardware::AudioStreamOutMSM72xx::setParameters(const String8& keyValuePairs)
 {
     AudioParameter param = AudioParameter(keyValuePairs);
-    String8 key = String8(AudioParameter::keyRouting);
+    String8 key;
     status_t status = NO_ERROR;
     int device;
     ALOGV("AudioStreamOutMSM72xx::setParameters() %s", keyValuePairs.string());
 
+#ifdef QCOM_FM_ENABLED
+    float fm_volume;
+    key = String8(AUDIO_PARAMETER_KEY_FM_VOLUME);
+    if (param.getFloat(key, fm_volume) == NO_ERROR) {
+        mHardware->setFmVolume(fm_volume);
+        param.remove(key);
+    }
+
+    key = String8(AUDIO_PARAMETER_KEY_HANDLE_FM);
+    if (param.getInt(key, device) == NO_ERROR) {
+        if (device & AUDIO_DEVICE_OUT_FM)
+            mHardware->enableFM();
+        else
+            mHardware->disableFM();
+        param.remove(key);
+    }
+#endif
+
+    key = String8(AudioParameter::keyRouting);
     if (param.getInt(key, device) == NO_ERROR) {
         mDevices = device;
         ALOGV("set output routing %x", mDevices);
@@ -2687,7 +2709,7 @@ status_t AudioHardware::AudioStreamOutDirect::set(
     uint32_t lChannels = pChannels ? *pChannels : 0;
     uint32_t lRate = pRate ? *pRate : 0;
 
-    ALOGD("set lFormat = %x lChannels= %u lRate = %u\n",
+    ALOGD("AudioStreamOutDirect::set  lFormat = %x lChannels= %u lRate = %u\n",
         lFormat, lChannels, lRate );
 
     if ((pFormat == 0) || BAD_INDEX == hw->getMvsMode(*pFormat, lRate)) {
@@ -2781,7 +2803,7 @@ ssize_t AudioHardware::AudioStreamOutDirect::write(const void* buffer, size_t by
                goto Error;
             }
 
-            mvs_config.mvs_mode = mHardware->getMvsMode(mFormat, mSampleRate));
+            mvs_config.mvs_mode = mHardware->getMvsMode(mFormat, mSampleRate);
             status = mHardware->getMvsRateType(mvs_config.mvs_mode ,&mvs_config.rate_type);
             ALOGD("set mvs config mode %d rate_type %d", mvs_config.mvs_mode, mvs_config.rate_type);
             if (status < 0) {

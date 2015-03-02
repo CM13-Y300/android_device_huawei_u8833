@@ -3,8 +3,6 @@
 #AUDIO_POLICY_TEST := true
 #ENABLE_AUDIO_DUMP := true
 
-ifneq ($(TARGET_BOOTLOADER_BOARD_NAME),u8825)
-TARGET_HAS_QACT := true
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -37,13 +35,34 @@ ifeq ($(strip $(BOARD_USES_SRS_TRUEMEDIA)),true)
 LOCAL_CFLAGS += -DSRS_PROCESSING
 endif
 
+ifeq ($(BOARD_USES_QCOM_AUDIO_LPA),true)
+    LOCAL_CFLAGS += -DQCOM_TUNNEL_LPA_ENABLED
+endif
+
+ifeq ($(BOARD_USES_QCOM_AUDIO_SPEECH),true)
+    LOCAL_CFLAGS += -DWITH_QCOM_SPEECH
+endif
+
+ifeq ($(BOARD_USES_QCOM_AUDIO_VOIPMUTE),true)
+    LOCAL_CFLAGS += -DWITH_QCOM_VOIPMUTE
+endif
+
+ifeq ($(BOARD_USES_QCOM_AUDIO_RESETALL),true)
+    LOCAL_CFLAGS += -DWITH_QCOM_RESETALL
+endif
+
 LOCAL_CFLAGS += -DQCOM_VOIP_ENABLED
 LOCAL_CFLAGS += -DQCOM_TUNNEL_LPA_ENABLED
 
 LOCAL_SHARED_LIBRARIES := \
     libcutils       \
     libutils        \
-    libmedia
+    libmedia        \
+    libaudioalsa
+
+# hack for prebuilt
+$(shell mkdir -p $(OUT)/obj/SHARED_LIBRARIES/libaudioalsa_intermediates/)
+$(shell touch $(OUT)/obj/SHARED_LIBRARIES/libaudioalsa_intermediates/export_includes)
 
 ifneq ($(TARGET_SIMULATOR),true)
 LOCAL_SHARED_LIBRARIES += libdl
@@ -112,5 +131,4 @@ LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
 LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 
 include $(BUILD_SHARED_LIBRARY)
-endif
 endif

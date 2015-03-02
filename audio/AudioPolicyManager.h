@@ -57,8 +57,8 @@ public:
                                                            AudioSystem::device_connection_state state,
                                                            const char *device_address);
 
-		virtual void setPhoneState(int state);
-		
+        virtual void setPhoneState(int state);
+
         virtual audio_devices_t getDeviceForVolume(audio_devices_t device);
 
         virtual uint32_t  checkDeviceMuteStrategies(AudioOutputDescriptor *outputDesc,
@@ -67,6 +67,7 @@ public:
         virtual void setForceUse(AudioSystem::force_use usage, AudioSystem::forced_config config);
 protected:
         virtual audio_devices_t getDeviceForStrategy(routing_strategy strategy, bool fromCache = true);
+
         fm_modes fmMode;
         bool pendingForceNone;
 
@@ -101,7 +102,7 @@ protected:
         // check that volume change is permitted, compute and send new volume to audio hardware
         status_t checkAndSetVolume(int stream, int index, audio_io_handle_t output, audio_devices_t device, int delayMs = 0, bool force = false);
         status_t stopInput(audio_io_handle_t input);
-		// select input device corresponding to requested audio source
+        // select input device corresponding to requested audio source
         virtual audio_devices_t getDeviceForInputSource(int inputSource);
 
         virtual uint32_t setOutputDevice(audio_io_handle_t output,

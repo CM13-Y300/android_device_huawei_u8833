@@ -460,7 +460,7 @@ audio_devices_t AudioPolicyManager::getDeviceForStrategy(routing_strategy strate
               device = getDeviceForStrategy(STRATEGY_PHONE);
               ALOGV("getDeviceForStrategy() incompatible media and phone devices");
           }
-	  }
+      }
       if (device == AUDIO_DEVICE_NONE) {
         ALOGE("getDeviceForStrategy() no device found for STRATEGY_MEDIA");
       }
@@ -1573,7 +1573,6 @@ status_t AudioPolicyManager::stopInput(audio_io_handle_t input)
     }
 }
 
-
 uint32_t AudioPolicyManager::setOutputDevice(audio_io_handle_t output, audio_devices_t device, bool force, int delayMs)
 {
     ALOGV("setOutputDevice() output %d device %04x delayMs %d", output, device, delayMs);
@@ -1736,9 +1735,6 @@ status_t AudioPolicyManager::checkAndSetVolume(int stream, int index, audio_io_h
             //Double delayMs to avoid sound burst while device switch.
             mpClientInterface->setParameters(mPrimaryOutput, param.toString(), delayMs*2);
             mLastVoiceVolume = fmVolume;
-        }
-        for (size_t i = 0; i < mStreams[stream].mIndexCur.size(); i++) {
-            mStreams[stream].mIndexCur.replaceValueAt(i, index);
         }
 #endif
       }
