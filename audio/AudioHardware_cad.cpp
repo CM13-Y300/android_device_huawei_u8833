@@ -44,7 +44,6 @@ extern "C" {
 #endif
 //#include <media/AudioRecord.h>
 
-
 #define COMBO_DEVICE_SUPPORTED // Headset speaker combo device supported on this target
 #define DUALMIC_KEY "dualmic_enabled"
 #define TTY_MODE_KEY "tty_mode"
@@ -371,8 +370,8 @@ AudioStreamOut* AudioHardware::openOutputStream(uint32_t devices, int *format, u
                 }
             }
             else {
-                 mDirectOutrefCnt++;
-                 ALOGE(" \n AudioHardware::AudioStreamOutDirect is already open refCnt %d", mDirectOutrefCnt);
+                mDirectOutrefCnt++;
+                ALOGE(" \n AudioHardware::AudioStreamOutDirect is already open refCnt %d", mDirectOutrefCnt);
             }
             return mDirectOutput;
         }
@@ -506,7 +505,7 @@ AudioStreamIn* AudioHardware::openInputStream(
         {
               ALOGE("PCM recording, in a voice call, with sample rate more than 8K not supported \
                    re-configure with 8K and try software re-sampler ");
-              *status = EINVAL;
+              *status = -EINVAL;
               *sampleRate = AUDIO_HW_IN_SAMPLERATE;
               mLock.unlock();
               return 0;
@@ -1153,7 +1152,7 @@ static status_t do_route_audio_rpc(uint32_t device,
     }
     else if(device == SND_DEVICE_IN_S_SADC_OUT_HANDSET) {
         args.device.rx_device = CAD_HW_DEVICE_ID_HANDSET_SPKR;
-	    args.device.tx_device = CAD_HW_DEVICE_ID_HANDSET_MIC_ENDFIRE;
+	args.device.tx_device = CAD_HW_DEVICE_ID_HANDSET_MIC_ENDFIRE;
         ALOGV("In DUALMIC_HANDSET");
     }
     else if(device == SND_DEVICE_IN_S_SADC_OUT_SPEAKER_PHONE) {
@@ -1197,7 +1196,7 @@ static status_t do_route_audio_rpc(uint32_t device,
         ALOGV("In SND_DEVICE_FM_ANALOG_STEREO_HEADSET_CODEC");
     }
     else if(device == SND_DEVICE_FM_ANALOG_STEREO_HEADSET) {
-	    args.device.pathtype = CAD_DEVICE_PATH_LB;
+	args.device.pathtype = CAD_DEVICE_PATH_LB;
         args.device.rx_device = CAD_HW_DEVICE_ID_LP_FM_HEADSET_SPKR_STEREO_RX;
         args.device.tx_device = CAD_HW_DEVICE_ID_NONE;
         ALOGV("In SND_DEVICE_FM_ANALOG_STEREO_HEADSET");
@@ -1425,17 +1424,6 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input, int outputDevice)
 #ifdef QCOM_FM_ENABLED
         } else if ((outputDevices & AudioSystem::DEVICE_OUT_WIRED_HEADSET) &&
                    (outputDevices & AudioSystem::DEVICE_OUT_FM)) {
-            if( !isFMAnalog() ){
-                ALOGI("Routing FM to Wired Headset\n");
-                new_snd_device = SND_DEVICE_FM_DIGITAL_STEREO_HEADSET;
-                enableDgtlFmDriver = true;
-            } else{
-                ALOGW("Enabling Anlg FM + codec device\n");
-                new_snd_device = SND_DEVICE_FM_ANALOG_STEREO_HEADSET_CODEC;
-                enableDgtlFmDriver = false;
-            }
-          } else if ((outputDevices & AudioSystem::DEVICE_OUT_WIRED_HEADSET) &&
-                    (outputDevices & AudioSystem::DEVICE_OUT_FM)) {
             if( !isFMAnalog() ){
                 ALOGI("Routing FM to Wired Headset\n");
                 new_snd_device = SND_DEVICE_FM_DIGITAL_STEREO_HEADSET;

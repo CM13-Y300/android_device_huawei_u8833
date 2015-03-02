@@ -640,12 +640,10 @@ status_t AudioPolicyManager::setDeviceConnectionState(audio_devices_t device,
                 } else if (audio_is_bluetooth_sco_device(device)) {
                     // handle SCO device connection
                     mScoDeviceAddress = String8(device_address, MAX_DEVICE_ADDRESS_LEN);
-/*
                 } else if (mHasUsb && audio_is_usb_device(device)) {
                     // handle USB device connection
-                    mUsbCardAndDevice = String8(device_address, MAX_DEVICE_ADDRESS_LEN);
-                    paramStr = mUsbCardAndDevice;
-*/
+                    mUsbOutCardAndDevice = String8(device_address, MAX_DEVICE_ADDRESS_LEN);
+                    paramStr = mUsbOutCardAndDevice;
                 }
                 if (!paramStr.isEmpty()) {
                     for (size_t i = 0; i < outputs.size(); i++) {
@@ -691,11 +689,9 @@ status_t AudioPolicyManager::setDeviceConnectionState(audio_devices_t device,
             } else if (audio_is_bluetooth_sco_device(device)) {
                 // handle SCO device disconnection
                 mScoDeviceAddress = "";
-/*
             } else if (mHasUsb && audio_is_usb_device(device)) {
                 // handle USB device disconnection
-                mUsbCardAndDevice = "";
-*/
+                mUsbOutCardAndDevice = "";
             }
         } break;
 
@@ -1363,7 +1359,7 @@ audio_devices_t AudioPolicyManager::getDeviceForInputSource(int inputSource)
             device = AUDIO_DEVICE_IN_BUILTIN_MIC;
         }
         break;
-    case AUDIO_SOURCE_VOICE_COMMUNICATION
+    case AUDIO_SOURCE_VOICE_COMMUNICATION:
         device = AudioSystem::DEVICE_IN_COMMUNICATION;
         break;
     case AUDIO_SOURCE_CAMCORDER:
@@ -1451,7 +1447,7 @@ status_t AudioPolicyManager::startOutput(audio_io_handle_t output,
     && (newDevice == (audio_devices_t)AudioSystem::DEVICE_OUT_FM))
     {
         newDevice = (audio_devices_t)((uint32_t)newDevice | AudioSystem::DEVICE_OUT_WIRED_HEADSET);
-        ALOGE("Selecting AnlgFM + CODEC device %x",NewDevice);
+        ALOGE("Selecting AnlgFM + CODEC device %x",newDevice);
         muteWaitMs = setOutputDevice(output, (audio_devices_t)newDevice, true);
     }
     else
