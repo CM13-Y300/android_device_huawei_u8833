@@ -20,9 +20,6 @@
 # Inherit from the common msm7x27a definitions
 -include device/huawei/msm7x27a-common/BoardConfigCommon.mk
 
-# Architecture and CPU
-TARGET_CPU_SMP := true
-
 TARGET_BOOTLOADER_BOARD_NAME := u8833
 TARGET_OTA_ASSERT_DEVICE := u8833,hwu8833,u8951,hwu8951
 
