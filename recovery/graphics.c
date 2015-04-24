@@ -445,3 +445,10 @@ void gr_fb_blank(bool blank)
         perror("ioctl(): blank");
 #endif
 }
+
+// These are new graphics functions from 5.0 that were not available in
+// 4.4 that are required by charger and healthd
+void gr_clear()
+{
+	return;
+}
