@@ -53,10 +53,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.telephony.ril.config=qcomdsds,skippinpukcount,signalstrength \
     ro.telephony.ril_class=HuaweiRIL
 
-# Music
-PRODUCT_PACKAGES += \
-   Eleven
-
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full.mk)
 
 $(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
