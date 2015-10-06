@@ -15,7 +15,7 @@
 #
 
 # Inherit some common Slim stuff
-$(call inherit-product, vendor/slim/config/common_full_phone.mk)
+$(call inherit-product, vendor/cm/config/common_full_phone.mk)
 
 # Inherit device configuration
 $(call inherit-product, device/huawei/u8833/full_u8833.mk)
@@ -25,5 +25,5 @@ TARGET_SCREEN_HEIGHT := 800
 TARGET_SCREEN_WIDTH := 480
 
 # Device name
-PRODUCT_NAME := slim_u8833
+PRODUCT_NAME := cm_u8833
 PRODUCT_DEVICE := u8833
