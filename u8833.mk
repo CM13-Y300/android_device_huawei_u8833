@@ -49,8 +49,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     gsm.version.baseband=2030 \
-    rild.libpath=/system/lib/libril-qc-qmi-1.so \
-    ro.telephony.ril_class=HuaweiRIL
+    rild.libpath=/system/lib/libril-qc-qmi-1.so
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full.mk)
 
